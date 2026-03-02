@@ -127,7 +127,7 @@ const DashboardLayout = () => {
               </span>
               <Dropdown menu={userMenu} placement="bottomRight">
                 <Avatar
-                  style={{ backgroundColor: "#10b981", cursor: "pointer" }}
+                  style={{ backgroundColor: "#008cba", cursor: "pointer" }}
                   icon={<UserOutlined />}
                 />
               </Dropdown>

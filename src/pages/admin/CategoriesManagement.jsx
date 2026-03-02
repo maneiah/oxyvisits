@@ -138,8 +138,8 @@ const CategoriesManagement = () => {
             type="primary"
             onClick={() => handleToggle(record.id, record.active)}
             style={{
-              backgroundColor: record.active ? '#f5222d' : '#52c41a',
-              borderColor: record.active ? '#f5222d' : '#52c41a',
+              backgroundColor: record.active ? '#f5222d' : '#1ab394',
+              borderColor: record.active ? '#f5222d' : '#1ab394',
             }}
           >
             {record.active ? 'Inactive' : 'Active'}
@@ -156,7 +156,7 @@ const CategoriesManagement = () => {
         <p className="text-gray-600 mt-2">Manage all categories and their status</p>
       </div>
       
-      <Card>
+      <div>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <h2 className="text-lg font-semibold text-gray-700">All Categories</h2>
           <Button
@@ -189,7 +189,7 @@ const CategoriesManagement = () => {
             },
           }}
         />
-      </Card>
+      </div>
 
       <Modal
         title="Create Category"

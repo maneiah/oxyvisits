@@ -50,7 +50,7 @@ const VisitsManagement = () => {
       align: 'center',
       render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
       width: 70,
-      responsive: ['md'],
+     
     },
     {
       title: 'Name',
@@ -63,7 +63,7 @@ const VisitsManagement = () => {
       dataIndex: 'location',
       key: 'location',
       align: 'center',
-      responsive: ['md'],
+      
     },
     {
       title: 'Contact Number',
@@ -78,14 +78,14 @@ const VisitsManagement = () => {
       key: 'webLink',
       align: 'center',
       render: (link) => link ? <a href={link} target="_blank" rel="noopener noreferrer">View</a> : '-',
-      responsive: ['lg'],
+    
     },
     {
       title: 'User Name',
       dataIndex: 'userName',
       key: 'userName',
       align: 'center',
-      responsive: ['md'],
+     
     },
     
     {
@@ -94,7 +94,7 @@ const VisitsManagement = () => {
       key: 'imageUrl',
       align: 'center',
       render: (url) => url ? <a href={url} target="_blank" rel="noopener noreferrer">View</a> : '-',
-      responsive: ['lg'],
+    
     },
   
    
@@ -116,7 +116,7 @@ const VisitsManagement = () => {
         <p className="text-gray-600 mt-2">View and manage all visits in this category</p>
       </div>
       
-      <Card>
+      <div>
 
         {loading ? (
           <div className="flex justify-center items-center py-20">
@@ -143,7 +143,7 @@ const VisitsManagement = () => {
               bordered
           />
         )}
-      </Card>
+      </div>
     </div>
   );
 };

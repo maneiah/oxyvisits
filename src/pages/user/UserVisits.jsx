@@ -134,7 +134,7 @@ const UserVisits = () => {
         <p className="text-gray-600 mt-2">View all visits in this category</p>
       </div>
 
-      <Card>
+      <div>
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <Spin size="large" />
@@ -163,7 +163,7 @@ const UserVisits = () => {
             }}
           />
         )}
-      </Card>
+      </div>
     </div>
   );
 };

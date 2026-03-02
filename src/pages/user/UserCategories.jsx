@@ -114,9 +114,9 @@ const UserCategories = () => {
           <Spin size="large" />
         </div>
       ) : categories.length === 0 ? (
-        <Card>
+        <div>
           <Empty description="No active categories available" />
-        </Card>
+        </div>
       ) : (
         <Row gutter={[16, 16]}>
           {categories.map((category) => (
