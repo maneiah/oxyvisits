@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Spin, Empty, Table } from 'antd';
+import { Card, Button, Spin, Empty, Table, Image } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -25,8 +25,10 @@ const UserVisits = () => {
   const fetchVisits = async () => {
     setLoading(true);
     try {
+      const userId = localStorage.getItem('userId');
       const response = await axios.get(`${API_BASE}/visits?categoryId=${categoryId}`);
-      setVisits(response.data.reverse());
+      const userVisits = response.data.filter(visit => visit.userId === userId);
+      setVisits(userVisits.reverse());
       if (response.data.length > 0 && response.data[0].categoryName) {
         setCategoryName(response.data[0].categoryName);
       }
@@ -47,22 +49,40 @@ const UserVisits = () => {
       title: "S.No",
       key: "sno",
       align: "center",
-      render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
-      width: 70,
-  
-    },
-    {
-      title: "User Name",
-      dataIndex: "userName",
-      key: "userName",
-      align: "center",
-    
+      render: (_, __, index) => (
+        <span>{(currentPage - 1) * pageSize + index + 1}</span>
+      ),
+      width: 80,
     },
     {
       title: "Visit Name",
       dataIndex: "name",
       key: "name",
       align: "center",
+      render: (text) => <span>{text}</span>,
+    },
+    {
+      title: "Location",
+      dataIndex: "location",
+      key: "location",
+      align: "center",
+      render: (text) => <span>{text}</span>,
+    },
+    {
+      title: "Contact Number",
+      dataIndex: "contactNumber",
+      key: "contactNumber",
+      align: "center",
+      render: (text) => <span>{text}</span>,
+    },
+    {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+      align: "center",
+      render: (text) => (
+        <span>{text?.length > 50 ? `${text.substring(0, 50)}...` : text}</span>
+      ),
     },
     {
       title: "Image",
@@ -71,33 +91,19 @@ const UserVisits = () => {
       align: "center",
       render: (url) =>
         url ? (
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            View
-          </a>
+          <Image
+            src={url}
+            alt="Visit Image"
+            width={50}
+            height={50}
+            style={{ borderRadius: '8px', objectFit: 'cover' }}
+            preview={{
+              mask: <div>View</div>
+            }}
+          />
         ) : (
-          "-"
+          <span>-</span>
         ),
-    
-    },
-    {
-      title: "Location",
-      dataIndex: "location",
-      key: "location",
-      align: "center",
-    
-    },
-    {
-      title: "Contact Number",
-      dataIndex: "contactNumber",
-      key: "contactNumber",
-      align: "center",
-    },
-    {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-      align: "center",
-     
     },
     {
       title: "Web Link",
@@ -107,40 +113,42 @@ const UserVisits = () => {
       render: (link) =>
         link ? (
           <a href={link} target="_blank" rel="noopener noreferrer">
-            View
+            Visit Site
           </a>
         ) : (
-          "-"
+          <span>-</span>
         ),
-     
     },
-
-    
   ];
 
   return (
-    <div>
-      <div className="mb-6">
+    <div className="p-4 md:p-6">
+      <div>
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate('/dashboard/user-categories')}
-          style={{ backgroundColor: '#008cba', borderColor: '#008cba', color: 'white', marginBottom: '16px' }}
+          className="mb-4"
         >
           Back to Categories
         </Button>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-          Visits {categoryName && `- ${categoryName}`}
-        </h1>
-        <p className="text-gray-600 mt-2">View all visits in this category</p>
+        <div className="p-6 rounded-xl">
+          <h1 className="text-xl md:text-1xl font-bold">
+            My Visits {categoryName && <span>- {categoryName}</span>}
+          </h1>
+          <p className="mt-2">View and manage your personal visits</p>
+        </div>
       </div>
 
-      <div>
+      <Card className="rounded-xl">
         {loading ? (
           <div className="flex justify-center items-center py-20">
-            <Spin size="large" />
+            <Spin size="large" tip="Loading your visits..." />
           </div>
         ) : visits.length === 0 ? (
-          <Empty description="No visits found in this category" />
+          <Empty 
+            description="You haven't added any visits in this category yet"
+            className="py-12"
+          />
         ) : (
           <Table
             columns={columns}
@@ -154,7 +162,7 @@ const UserVisits = () => {
               pageSize: pageSize,
               total: visits.length,
               showSizeChanger: true,
-              showTotal: (total) => `Total ${total} items`,
+              showTotal: (total) => `Total ${total} visits`,
               pageSizeOptions: ['5', '10', '20', '50'],
               onChange: (page, size) => {
                 setCurrentPage(page);
@@ -163,7 +171,7 @@ const UserVisits = () => {
             }}
           />
         )}
-      </div>
+      </Card>
     </div>
   );
 };
