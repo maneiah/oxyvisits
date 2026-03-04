@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Spin, Empty, Table, Image } from 'antd';
+import { Card, Button, Spin, Empty, Table, Image, Typography, Row, Col } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import BASE_URL from '../../core/config/Config';
+
+const { Title, Text } = Typography;
 const API_BASE = `${BASE_URL}/ai-service`;
 
 const UserVisits = () => {
@@ -66,7 +68,14 @@ const UserVisits = () => {
       dataIndex: "location",
       key: "location",
       align: "center",
-      render: (text) => <span>{text}</span>,
+      render: (location) =>
+        location ? (
+          <a href={location} target="_blank" rel="noopener noreferrer">
+            View Map
+          </a>
+        ) : (
+          <span>-</span>
+        ),
     },
     {
       title: "Contact Number",
@@ -93,13 +102,10 @@ const UserVisits = () => {
         url ? (
           <Image
             src={url}
-            alt="Visit Image"
-            width={50}
-            height={50}
-            style={{ borderRadius: '8px', objectFit: 'cover' }}
-            preview={{
-              mask: <div>View</div>
-            }}
+            width={52}
+            height={52}
+            style={{ borderRadius: 10, objectFit: "cover" }}
+            preview
           />
         ) : (
           <span>-</span>
@@ -122,41 +128,43 @@ const UserVisits = () => {
   ];
 
   return (
-    <div className="p-4 md:p-6">
-      <div>
-        <Button
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/dashboard/user-categories')}
-          className="mb-4"
-        >
-          Back to Categories
-        </Button>
-        <div className="p-6 rounded-xl">
-          <h1 className="text-xl md:text-1xl font-bold">
+    <div style={{ padding: 16 }}>
+      {/* Header with back button and title */}
+      <Row gutter={[12, 12]} align="middle" style={{ marginBottom: 16 }}>
+       
+        <Col flex={1}>
+          <Title level={3} style={{ margin: 0 }}>
             My Visits {categoryName && <span>- {categoryName}</span>}
-          </h1>
-          <p className="mt-2">View and manage your personal visits</p>
-        </div>
-      </div>
+          </Title>
+          <Text type="secondary">View and manage your personal visits</Text>
+        </Col>
+      </Row>
 
-      <Card className="rounded-xl">
+      {/* Content */}
+      <div style={{ borderRadius: 14 }}>
         {loading ? (
-          <div className="flex justify-center items-center py-20">
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: 240,
+            }}
+          >
             <Spin size="large" tip="Loading your visits..." />
           </div>
         ) : visits.length === 0 ? (
           <Empty 
             description="You haven't added any visits in this category yet"
-            className="py-12"
+            style={{ padding: '48px 0' }}
           />
         ) : (
           <Table
             columns={columns}
             dataSource={visits}
             rowKey="visitId"
-            loading={loading}
             bordered
-            scroll={{ x: 'max-content' }}
+            scroll={{ x: '100%' }}
             pagination={{
               current: currentPage,
               pageSize: pageSize,
@@ -168,10 +176,11 @@ const UserVisits = () => {
                 setCurrentPage(page);
                 setPageSize(size);
               },
+              responsive: true,
             }}
           />
         )}
-      </Card>
+      </div>
     </div>
   );
 };

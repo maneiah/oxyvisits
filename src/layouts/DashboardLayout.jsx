@@ -10,6 +10,7 @@ import {
   TeamOutlined,
   FileTextOutlined,
   AppstoreOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 
@@ -60,18 +61,34 @@ const DashboardLayout = () => {
           label: "Categories",
           onClick: () => navigate("/dashboard/categories"),
         },
+        {
+          key: "/dashboard/all-visits",
+          icon: <TeamOutlined />,
+          label: "All Visits",
+          onClick: () => navigate("/dashboard/all-visits"),
+        },
       ];
     }
 
     return [
+      {
+        key: "/dashboard",
+        icon: <DashboardOutlined />,
+        label: "Dashboard",
+        onClick: () => navigate("/dashboard"),
+      },
       {
         key: "/dashboard/user-categories",
         icon: <AppstoreOutlined />,
         label: "Categories",
         onClick: () => navigate("/dashboard/user-categories"),
       },
-     
-     
+      {
+        key: "/dashboard/user-all-visits",
+        icon: <TeamOutlined />,
+        label: "My Visits",
+        onClick: () => navigate("/dashboard/user-all-visits"),
+      },
     ];
   };
 
@@ -88,10 +105,17 @@ const DashboardLayout = () => {
       >
         <div
           className="flex items-center justify-center h-16"
-          style={{ background: "#0f172a" }}
+       
         >
           <h1 className="text-white font-bold text-lg">
-            {collapsed ? "OXY" : "OXYVISITS"}
+            {collapsed ? (
+              <span style={{ color: '#008cba' }}>OXY</span>
+            ) : (
+              <>
+                <span style={{ color: '#008cba' }}>OXY</span>
+                <span style={{ color: '#1ab394' }}>VISITS</span>
+              </>
+            )}
           </h1>
         </div>
         <Menu
@@ -123,7 +147,7 @@ const DashboardLayout = () => {
                 {primaryType === "HELPDESKADMIN" ||
                 primaryType === "HELPDESKSUPERADMIN"
                   ? "Admin Panel"
-                  : "User Panel"}
+                  : localStorage.getItem('userName') || "User Panel"}
               </span>
               <Dropdown menu={userMenu} placement="bottomRight">
                 <Avatar
@@ -154,7 +178,7 @@ const DashboardLayout = () => {
           }}
         >
           <div className="text-gray-600 text-xs md:text-sm">
-            © {new Date().getFullYear()} OXYVISITS. All rights reserved.
+            © {new Date().getFullYear()} <span style={{ color: '#008cba', fontWeight: 'bold' }}>OXY</span><span style={{ color: '#1ab8cba', fontWeight: 'bold' }}>VISITS</span>. All rights reserved.
           </div>
         </Footer>
       </Layout>

@@ -1,2 +1,13 @@
 @import "tailwindcss";
 
+/* Table header styling */
+.ant-table-thead > tr > th {
+  background: linear-gradient(135deg, #e0e7ff 0%, #ddd6fe 100%) !important;
+  color: #4c1d95 !important;
+  font-weight: 600 !important;
+  border-color: #c7d2fe !important;
+}
+
+.ant-table-thead > tr > th::before {
+  display: none !important;
+}

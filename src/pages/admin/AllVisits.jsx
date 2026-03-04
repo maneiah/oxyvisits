@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Card, Spin, Input, Image, Row, Col, Typography } from 'antd';
 import { SearchOutlined, UserOutlined } from '@ant-design/icons';
-import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import BASE_URL from '../../core/config/Config';
@@ -9,42 +8,33 @@ import BASE_URL from '../../core/config/Config';
 const { Title, Text } = Typography;
 const API_BASE = `${BASE_URL}/ai-service`;
 
-const VisitsManagement = () => {
+const AllVisits = () => {
   const [visits, setVisits] = useState([]);
   const [filteredVisits, setFilteredVisits] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [categoryName, setCategoryName] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [searchText, setSearchText] = useState('');
-  const navigate = useNavigate();
-  const { categoryId } = useParams();
 
   useEffect(() => {
-    if (categoryId) {
-      fetchVisits();
-    }
-  }, [categoryId]);
+    fetchAllVisits();
+  }, []);
 
   useEffect(() => {
     const filtered = visits.filter(visit =>
       visit.name?.toLowerCase().includes(searchText.toLowerCase()) ||
       visit.userName?.toLowerCase().includes(searchText.toLowerCase()) ||
+      visit.categoryName?.toLowerCase().includes(searchText.toLowerCase()) ||
       visit.location?.toLowerCase().includes(searchText.toLowerCase()) ||
       visit.contactNumber?.includes(searchText)
     );
     setFilteredVisits(filtered);
   }, [searchText, visits]);
 
-  const fetchVisits = async () => {
+  const fetchAllVisits = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_BASE}/visits?categoryId=${categoryId}`);
+      const response = await axios.get(`${API_BASE}/visits`);
       setVisits(response.data.reverse());
       setFilteredVisits(response.data.reverse());
-      if (response.data.length > 0 && response.data[0].categoryName) {
-        setCategoryName(response.data[0].categoryName);
-      }
     } catch (error) {
       const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Failed to fetch visits';
       Swal.fire({
@@ -62,9 +52,7 @@ const VisitsManagement = () => {
       title: '#',
       key: 'sno',
       align: 'center',
-      render: (_, __, index) => (
-        <span>{(currentPage - 1) * pageSize + index + 1}</span>
-      ),
+      render: (_, __, index) => <span>{index + 1}</span>,
      
     },
     {
@@ -73,30 +61,30 @@ const VisitsManagement = () => {
       key: 'userName',
       align: 'center',
      
-   
+    },
+    {
+      title: 'Category',
+      dataIndex: 'categoryName',
+      key: 'categoryName',
+      align: 'center',
+     
     },
     {
       title: 'Visit Name',
       dataIndex: 'name',
       key: 'name',
-      align: 'center',
-   
-      
+    align:"center",
+      sorter: (a, b) => a.name.localeCompare(b.name),
+  
     },
-   
     {
       title: 'Contact',
       dataIndex: 'contactNumber',
       key: 'contactNumber',
       align: 'center',
-      render: (text) => (
-        <div>
-          {text}
-        </div>
-      ),
-    
+      
     },
-     {
+    {
       title: 'Location',
       dataIndex: 'location',
       key: 'location',
@@ -117,13 +105,11 @@ const VisitsManagement = () => {
       key: 'description',
       align: 'center',
       render: (text) => (
-        <div>
-          {text?.length > 80 ? (
-            <span title={text}>{text.substring(0, 80)}...</span>
-          ) : text}
-        </div>
+        <span>
+          {text?.length > 50 ? `${text.substring(0, 50)}...` : text}
+        </span>
       ),
-      
+     
     },
     {
       title: 'Image',
@@ -134,37 +120,23 @@ const VisitsManagement = () => {
         url ? (
           <Image
             src={url}
-            alt="Visit Image"
             width={50}
             height={50}
             style={{ borderRadius: '8px', objectFit: 'cover' }}
-            preview={{
-              mask: <div>View</div>
-            }}
+            preview
           />
         ) : (
-          <span>No image</span>
+          <span>-</span>
         ),
-   
+  
     },
     {
-      title: 'Website',
-      dataIndex: 'webLink',
-      key: 'webLink',
+      title: 'Created Date',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
       align: 'center',
-      render: (link) =>
-        link ? (
-          <a 
-            href={link} 
-            target="_blank" 
-            rel="noopener noreferrer"
-          >
-            Visit
-          </a>
-        ) : (
-          <span>No link</span>
-        ),
-      
+      render: (date) => (date ? new Date(date).toLocaleDateString() : '-'),
+    
     },
   ];
 
@@ -173,17 +145,14 @@ const VisitsManagement = () => {
       <Row gutter={[12, 12]} align="middle" justify="space-between" style={{ marginBottom: 16 }}>
         <Col xs={24} md={12}>
           <Title level={3} style={{ margin: 0 }}>
-            Visits Management
-            {categoryName && (
-              <span> - {categoryName}</span>
-            )}
+            All Visits
           </Title>
-          <Text type="secondary">View and manage all visits in this category</Text>
+          <Text type="secondary">Complete visits management</Text>
         </Col>
         <Col xs={24} md={12}>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <Input
-              placeholder="Search visits, users, locations..."
+              placeholder="Search by user, category, visit name..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
@@ -207,21 +176,10 @@ const VisitsManagement = () => {
             rowKey="visitId"
             bordered
             scroll={{ x: "100%" }}
-            size="small"
             pagination={{
-              current: currentPage,
-              pageSize: pageSize,
-              total: filteredVisits.length,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total, range) => (
-                `${range[0]}-${range[1]} of ${total} visits`
-              ),
-              pageSizeOptions: ['5', '10', '20', '50'],
-              onChange: (page, size) => {
-                setCurrentPage(page);
-                setPageSize(size);
-              },
+              pageSize: 10,
+              showTotal: (total) => `Total ${total} visits`,
+              responsive: true,
             }}
           />
         )}
@@ -230,4 +188,4 @@ const VisitsManagement = () => {
   );
 };
 
-export default VisitsManagement;
+export default AllVisits;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Modal, Form, Input, Row, Col, Empty, Spin, Upload } from 'antd';
-import { PlusOutlined, EyeOutlined, UploadOutlined } from '@ant-design/icons';
+import { Table, Button, Modal, Form, Input, Row, Col, Empty, Spin, Upload, Space } from 'antd';
+import { PlusOutlined, EyeOutlined, UploadOutlined, EnvironmentOutlined, SearchOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
@@ -9,9 +9,11 @@ const API_BASE = `${BASE_URL}/ai-service`;
 
 const UserCategories = () => {
   const [categories, setCategories] = useState([]);
+  const [filteredCategories, setFilteredCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchText, setSearchText] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     location: '',
@@ -34,6 +36,7 @@ const UserCategories = () => {
       const response = await axios.get(`${API_BASE}/categories`);
       const activeCategories = response.data.filter(cat => cat.active);
       setCategories(activeCategories.reverse());
+      setFilteredCategories(activeCategories.reverse());
     } catch (error) {
       const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Failed to fetch categories';
       Swal.fire({
@@ -43,6 +46,39 @@ const UserCategories = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSearch = (value) => {
+    setSearchText(value);
+    const filtered = categories.filter(category =>
+      category.name.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredCategories(filtered);
+  };
+
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const googleMapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+          setFormData({ ...formData, location: googleMapsUrl });
+        },
+        (error) => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Unable to get location. Please enable location access.',
+          });
+        }
+      );
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Geolocation is not supported by your browser.',
+      });
     }
   };
 
@@ -102,66 +138,103 @@ const UserCategories = () => {
     }
   };
 
+  const columns = [
+    {
+      title: 'S.No',
+      key: 'serialNo',
+      
+      align: 'center',
+      render: (_, __, index) => index + 1,
+    },
+    {
+      title: 'Category Name',
+      dataIndex: 'name',
+      key: 'name',
+      align: 'center',
+      sorter: (a, b) => a.name.localeCompare(b.name),
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+    
+      align: 'center',
+      render: (_, category) => (
+        <Space>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            size="medium"
+            onClick={() => {
+              setSelectedCategory(category);
+              setModalVisible(true);
+            }}
+            style={{ backgroundColor: '#1ab394', borderColor: '#1ab394' }}
+          >
+            Add Visit
+          </Button>
+          <Button
+            type="primary"
+            icon={<EyeOutlined />}
+            size="medium"
+            onClick={() => navigate(`/dashboard/user-visits/${category.id}`)}
+            style={{ backgroundColor: '#008cba', borderColor: '#008cba' }}
+          >
+            View Visits
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Categories</h1>
-        <p className="text-gray-600 mt-2">Browse and manage your categories</p>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Categories</h1>
+          <p className="text-gray-600 mt-2">Browse and manage your categories</p>
+        </div>
+        <div style={{ width: 300 }}>
+          <Input
+            placeholder="Search categories..."
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => handleSearch(e.target.value)}
+            allowClear
+          />
+        </div>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center items-center py-20">
-          <Spin size="large" />
-        </div>
-      ) : categories.length === 0 ? (
-        <div>
-          <Empty description="No active categories available" />
-        </div>
-      ) : (
-        <Row gutter={[16, 16]}>
-          {categories.map((category) => (
-            <Col xs={24} sm={12} lg={8} xl={6} key={category.id}>
-              <Card
-                hoverable
-                className="h-full"
-                style={{ borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
-              >
-                <div className="flex flex-col h-full">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
-                    {category.name}
-                  </h3>
-                  <div className="flex flex-col gap-2 mt-auto">
-                    <Button
-                      type="primary"
-                      icon={<PlusOutlined />}
-                      block
-                      onClick={() => {
-                        setSelectedCategory(category);
-                        setModalVisible(true);
-                      }}
-                      style={{ backgroundColor: '#1ab394', borderColor: '#1ab394' }}
-                    >
-                      Add Visit
-                    </Button>
-                    <Button
-                      type="primary"
-                      icon={<EyeOutlined />}
-                      block
-                      onClick={() => navigate(`/dashboard/user-visits/${category.id}`)}
-                      style={{ backgroundColor: '#008cba', borderColor: '#008cba' }}
-                    >
-                      View Visits
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      )}
+      <Table
+        columns={columns}
+        dataSource={filteredCategories}
+        loading={loading}
+        rowKey="id"
+        scroll={{x:"100%"}}
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} categories`,
+        }}
+        locale={{
+          emptyText: <Empty description="No active categories available" />,
+        }}
+       bordered
+      />
 
       <Modal
-        title={`Add Visit - ${selectedCategory?.name}`}
+        title={
+          <span style={{ 
+            background: 'linear-gradient(90deg, #9333ea 0%, #3b82f6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontWeight: 'bold',
+            fontSize: '18px'
+          }}>
+            Add Visit - {selectedCategory?.name}
+          </span>
+        }
         open={modalVisible}
         onCancel={() => {
           setModalVisible(false);
@@ -193,11 +266,16 @@ const UserCategories = () => {
                 validateStatus={errors.location ? 'error' : ''}
                 help={errors.location || ''}
               >
-                <Input
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="Enter location"
-                />
+                <Space.Compact style={{ width: '100%' }}>
+                  <Input
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    placeholder="Enter location"
+                  />
+                  <Button style={{backgroundColor:"#008cba",color:"white"}} onClick={getCurrentLocation} icon={<EnvironmentOutlined />} type="primary">
+                    Current Location
+                  </Button>
+                </Space.Compact>
               </Form.Item>
             </Col>
           </Row>
@@ -259,7 +337,7 @@ const UserCategories = () => {
               <Button
                 type="primary"
                 onClick={handleAddVisit}
-                style={{ backgroundColor: '#008cba', borderColor: '#008cba' }}
+                style={{ backgroundColor: '#1ab394', borderColor: '#1ab394' }}
               >
                 Submit
               </Button>
